@@ -1,0 +1,38 @@
+.custom-leaflet-icon {
+  background: transparent;
+  border: 0;
+}
+
+.civic-map-popup .leaflet-popup-content-wrapper,
+.civic-map-popup .leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.civic-map-popup .leaflet-popup-tip {
+  display: none;
+}
+
+.leaflet-container {
+  font-family: inherit;
+  background: #dbe7df;
+}
+
+.dark .leaflet-container {
+  background: #020617;
+  filter: saturate(0.82) brightness(0.78) contrast(1.08);
+}
+
+.dark .leaflet-control-zoom a,
+.dark .leaflet-control-attribution {
+  border-color: rgba(51, 65, 85, 0.9);
+  background: rgba(15, 23, 42, 0.88);
+  color: #cbd5e1;
+}
+
+.dark .leaflet-control-zoom a:hover {
+  background: rgba(30, 41, 59, 0.95);
+  color: #ffffff;
+}

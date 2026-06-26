@@ -1,0 +1,313 @@
+:root {
+  --CivicPulse-bg-main: #f5f9f7;
+  --CivicPulse-bg-card: #fff;
+  --CivicPulse-bg-section: #f6fefa;
+  --CivicPulse-border-main: #c7e5d6;
+  --CivicPulse-title: #198754;
+  --CivicPulse-title-border: #4caf50;
+  --CivicPulse-subtitle: #198754;
+  --CivicPulse-section-bar: #4caf50;
+  --CivicPulse-text: #34423f;
+  --CivicPulse-list: #295343;
+  --CivicPulse-faq-q: #218050;
+  --CivicPulse-faq-a-bg: #f7f7f7;
+  --CivicPulse-faq-a: #34423f;
+  --CivicPulse-btn: #198754;
+  --CivicPulse-btn-bg-hover: #198754;
+  --CivicPulse-btn-text-hover: #fff;
+  --CivicPulse-blob-green: #4caf50;
+  --CivicPulse-blob-light-green: #98ecb7;
+  --CivicPulse-blob-yellow: #eaffb0;
+}
+
+/* ======================================
+    GitHub-like Dark Mode
+    (Prefers .dark class on body or main)
+   ====================================== */
+.dark {
+  --CivicPulse-bg-main: #161b22;
+  --CivicPulse-bg-card: #0d1117;
+  --CivicPulse-bg-section: #192126;
+  --CivicPulse-border-main: #30363d;
+  --CivicPulse-title: #3fb950;
+  --CivicPulse-title-border: #238636;
+  --CivicPulse-subtitle: #2ea043;
+  --CivicPulse-section-bar: #238636;
+  --CivicPulse-text: #c9d1d9;
+  --CivicPulse-list: #8bdda6;
+  --CivicPulse-faq-q: #55d188;
+  --CivicPulse-faq-a-bg: #21262d;
+  --CivicPulse-faq-a: #b7e6be;
+  --CivicPulse-btn: #2ea043;
+  --CivicPulse-btn-bg-hover: #238636;
+  --CivicPulse-btn-text-hover: #fff;
+  --CivicPulse-blob-green: #238636;
+  --CivicPulse-blob-light-green: #33eb7e;
+  --CivicPulse-blob-yellow: #ffd549;
+}
+
+/* =========================
+   General Structure & Reset
+   ========================= */
+
+.resources-page-wrapper {
+  position: relative;
+  min-height: 100vh;
+  padding: 1.5rem 0 3rem 0;
+  background: var(--CivicPulse-bg-main);
+  font-family: 'Segoe UI', sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.35s, color 0.35s;
+}
+
+/* Back Button */
+.back-button {
+  margin: 2rem auto 1.5rem auto;
+  display: inline-flex;
+  cursor: pointer;
+  border: 2px solid var(--CivicPulse-btn);
+  padding: 0.4rem 1rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 8px;
+  color: var(--CivicPulse-btn) !important;
+  background: transparent;
+  gap: 0.5rem;
+  transition: background-color 0.3s, color 0.3s;
+  user-select: none;
+  box-shadow: 0 1px 3px rgba(44, 106, 79, 0.04);
+}
+
+.back-button:hover {
+  background-color: var(--CivicPulse-btn-bg-hover);
+  color: var(--CivicPulse-btn-text-hover) !important;
+}
+
+/* Main Content Container */
+.resources-container {
+
+  background: var(--CivicPulse-bg-card);
+
+  max-width: 900px;
+  width: 90%;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem 1.5rem;
+  border-radius: 18px;
+  box-shadow: 0 6px 36px rgba(44, 106, 79, 0.08);
+  flex-grow: 1;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+
+  transition: background 0.35s;
+
+}
+
+/* Page Title */
+.resources-title {
+  text-align: center;
+  font-size: 2.3rem;
+  font-weight: bold;
+  margin: 0 0 1.5rem 0;
+  border-bottom: 2px solid var(--CivicPulse-title-border);
+  padding-bottom: 0.6rem;
+  color: var(--CivicPulse-title);
+  letter-spacing: 0.02em;
+  background: none;
+  transition: color 0.35s, border-color 0.35s;
+}
+
+
+.resources-section {
+  margin-bottom: 2.2rem;
+  border-left: 4px solid var(--CivicPulse-section-bar);
+  padding-left: 1.3rem;
+  background: var(--CivicPulse-bg-section);
+  border-radius: 7px;
+  box-shadow: 0 1px 4px rgba(44, 106, 79, 0.04);
+  transition: background 0.35s, border-color 0.35s;
+}
+
+.resources-subtitle {
+  font-size: 1.32rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--CivicPulse-subtitle);
+  font-weight: 600;
+  transition: color 0.35s;
+}
+
+
+.resources-text {
+  font-size: 1.01rem;
+  line-height: 1.65;
+  color: var(--CivicPulse-text);
+  margin-bottom: 0.7rem;
+  transition: color 0.35s;
+}
+
+.dark .resources-text {
+  color: #cccccc;
+}
+
+.resources-list {
+  list-style: disc;
+  padding-left: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--CivicPulse-list);
+  margin-bottom: 0.5rem;
+  transition: color 0.35s;
+}
+
+.icon {
+  font-size: 1.22rem;
+  opacity: 0.90;
+}
+
+.green {
+  color: var(--CivicPulse-section-bar);
+}
+
+/* FAQ Section */
+
+.faq-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.18rem;
+}
+
+.faq-item {
+  border: 1px solid var(--CivicPulse-border-main);
+  border-radius: 8px;
+  background: var(--CivicPulse-bg-section);
+  box-shadow: 0 2px 6px rgba(44, 106, 79, 0.03);
+  overflow: hidden;
+  transition: background 0.35s, border-color 0.35s;
+}
+
+.dark .faq-item {
+  border-color: #555;
+}
+
+.faq-question {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 1rem;
+  font-size: 1.06rem;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  color: var(--CivicPulse-faq-q);
+  transition: background 0.2s, color 0.35s;
+}
+
+.faq-question:hover,
+.faq-question:focus {
+  background: #e0f9eb;
+  outline: none;
+}
+
+
+.dark .faq-question:hover,
+.dark .faq-question:focus {
+  background: #193b2d;
+
+}
+
+.faq-answer {
+  padding: 0.9rem 1.1rem 1.1rem 1.1rem;
+  background-color: var(--CivicPulse-faq-a-bg);
+  font-size: 0.99rem;
+  line-height: 1.58;
+  color: var(--CivicPulse-faq-a);
+  transition: background 0.35s, color 0.35s;
+}
+
+.dark .faq-answer {
+  background-color: #2a2a2a;
+  color: #cccccc;
+}
+
+.arrow-icon {
+  font-size: 1rem;
+  color: var(--CivicPulse-section-bar);
+}
+
+/* ===========================
+   Animated Blob Backgrounds
+   =========================== */
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.25;
+  z-index: 0;
+  filter: blur(4px);
+  pointer-events: none;
+  transition: background 0.4s;
+}
+
+.bg-green { background: var(--CivicPulse-blob-green); width: 320px; height: 320px; top: -80px; left: -80px;}
+.bg-light-green { background: var(--CivicPulse-blob-light-green); width: 290px; height: 290px; top: 220px; right: -90px;}
+.bg-yellow { background: var(--CivicPulse-blob-yellow); width: 210px; height: 210px; bottom: -60px; left: 50vw; transform: translateX(-50%);}
+
+/* Animated Keyframes */
+@keyframes blob {
+  0%, 100% {transform: translate(0, 0) scale(1);}
+  30% {transform: translate(30px, -50px) scale(1.1);}
+  60% {transform: translate(-20px, 40px) scale(0.9);}
+  80% {transform: translate(10px, -20px) scale(1.05);}
+}
+.animate-blob { animation: blob 7s infinite;}
+.animation-delay-2000 { animation-delay: 2s;}
+.animation-delay-4000 { animation-delay: 4s;}
+
+/* ===============================
+   Responsive Design improvements
+   =============================== */
+@media (max-width: 768px) {
+  .resources-container {
+    padding: 1.25rem 0.5rem 2rem 0.5rem;
+    margin: 1.2rem 0.2rem;
+    border-radius: 10px;
+  }
+  .resources-title {
+    font-size: 1.5rem;
+  }
+  .resources-section {
+    padding-left: 0.7rem;
+    border-radius: 5px;
+    margin-bottom: 1.4rem;
+  }
+}
+@media (max-width: 500px) {
+  .resources-page-wrapper {
+    font-size: 94%;
+  }
+  .resources-title {
+    font-size: 1.25rem;
+    padding-bottom: 0.4rem;
+  }
+}
+
+/* Prevent repeat: Set relative, overflow hidden for .resources-page-wrapper */
+.resources-page-wrapper { position: relative; overflow: hidden; }
+
+body,
+.resources-page-wrapper {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+}
