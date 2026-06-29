@@ -1,5 +1,6 @@
 const Issue = require('../models/issues');
 const path = require('path');
+const { analyzeIssueWithAI } = require('../utils/geminiService');
 
 // Create a new issue
 exports.createIssue = async (req, res) => {
@@ -30,20 +31,27 @@ exports.createIssue = async (req, res) => {
       ? `/uploads/${req.file.filename}`
       : null;
 
+    let aiData = null;
+    try {
+      aiData = await analyzeIssueWithAI(title, description);
+    } catch (e) {
+      console.log("AI analysis failed or unavailable, falling back to defaults.");
+    }
+
     const issue = new Issue({
       title,
       description,
-      category: category || 'Other',
-      severity: severity || 'Medium',
+      category: aiData?.category || category || 'Other',
+      severity: aiData?.severity || severity || 'Medium',
       location: location || '',
       latitude: latitude ? parseFloat(latitude) : undefined,
       longitude: longitude ? parseFloat(longitude) : undefined,
       email: email || '',
       phone: phone || '',
-      department: department || '',
+      department: aiData?.department || department || '',
       responseTime: responseTime || '',
-      confidence: confidence ? parseFloat(confidence) : undefined,
-      summary: summary || '',
+      confidence: aiData?.confidence || (confidence ? parseFloat(confidence) : undefined),
+      summary: aiData?.summary || summary || '',
       notifyByEmail: notifyByEmail === 'true' || notifyByEmail === true,
       fileUrl,
       clerkUserId,
