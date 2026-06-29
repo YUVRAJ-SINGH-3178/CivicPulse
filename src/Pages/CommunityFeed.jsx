@@ -45,7 +45,9 @@ const getSeverityClasses = (severity) => {
 const getMediaUrl = (fileUrl) => {
   if (!fileUrl) return null;
   if (/^https?:\/\//i.test(fileUrl)) return fileUrl;
-  return `${API_BASE_URL}${fileUrl}`;
+  const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  const path = fileUrl.startsWith('/') ? fileUrl : `/${fileUrl}`;
+  return `${baseUrl}${path}`;
 };
 
 export default function CommunityFeed() {
