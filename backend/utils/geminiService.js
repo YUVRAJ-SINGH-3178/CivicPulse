@@ -63,11 +63,11 @@ Output ONLY valid JSON without any markdown formatting like \`\`\`json.
     let severity = "Medium";
     
     if (lowerDesc.includes("pothole") || lowerDesc.includes("road")) {
-      category = "Roads";
+      category = "Road & Infrastructure";
       department = "Public Works Department";
       severity = "High";
     } else if (lowerDesc.includes("water") || lowerDesc.includes("pipe") || lowerDesc.includes("leak")) {
-      category = "Water";
+      category = "Water & Sanitation";
       department = "Water Supply Department";
       severity = "High";
     } else if (lowerDesc.includes("light") || lowerDesc.includes("electric")) {
@@ -75,7 +75,7 @@ Output ONLY valid JSON without any markdown formatting like \`\`\`json.
       department = "Electrical Department";
       severity = "Medium";
     } else if (lowerDesc.includes("garbage") || lowerDesc.includes("trash") || lowerDesc.includes("waste")) {
-      category = "Sanitation";
+      category = "Waste Management";
       department = "Waste Management Authority";
       severity = "Medium";
     }
