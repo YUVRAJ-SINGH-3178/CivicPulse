@@ -9,8 +9,8 @@ const csrf = require("csurf");
 const csrfProtection = csrf({
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // HTTPS only in production
-    sameSite: "strict",
+    secure: true, // Must be true for SameSite=None
+    sameSite: "none", // Must be 'none' for cross-origin requests (Vercel -> Render)
     maxAge: 3600000, // 1 hour
   },
   // Ignore GET requests and some safe endpoints
