@@ -98,11 +98,14 @@ const errorHandler = require("./middlewares/errorHandler.js");
 app.use(errorHandler);
 
 // === Start Server ===
-// On Vercel: run as a single process.
+// Vercel needs the app exported as a handler.
 // Locally: use cluster for multi-core performance.
 const isVercel = process.env.VERCEL || process.env.VERCEL_ENV;
 
-if (!isVercel) {
+if (isVercel) {
+  // Export app for Vercel to handle routing
+  module.exports = app;
+} else {
   const cluster = require("cluster");
   const os = require("os");
   const numCPUs = os.cpus().length;
@@ -131,8 +134,4 @@ if (!isVercel) {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Worker running at http://localhost:${PORT}`));
   }
-} else {
-  // Vercel: single process, no clustering
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
