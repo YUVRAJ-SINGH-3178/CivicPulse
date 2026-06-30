@@ -27,10 +27,7 @@ const { swaggerUi, specs } = require("./config/swagger.js");
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
-
-      // Allow any localhost, any vercel.app, or your specific domains
       if (
         origin.startsWith("http://localhost") ||
         origin.endsWith(".vercel.app") ||
@@ -38,7 +35,6 @@ app.use(
       ) {
         return callback(null, true);
       }
-
       return callback(new Error("CORS policy violation"), false);
     },
     credentials: true,
@@ -52,13 +48,12 @@ app.use(cookieParser());
 // === Security Middlewares ===
 app.use(xssSanitizer);
 
-// CSRF Protection (skip for certain routes)
 const csrfSkipRoutes = [
-  "/api/contributors",  // Public read-only API
-  "/api-docs",          // Swagger documentation
-  "/api/auth/webhook",  // Webhooks
-  "/api/issues",        // Public issue submissions (multipart — csurf can't read body before multer)
-  "/api/profile",       // Profile creation/update
+  "/api/contributors",
+  "/api-docs",
+  "/api/auth/webhook",
+  "/api/issues",
+  "/api/profile",
 ];
 app.use(skipCSRFForRoutes(csrfSkipRoutes));
 
@@ -66,7 +61,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // === Rate Limiting ===
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: "Too many requests from this IP, please try again later.",
 });
@@ -78,7 +73,6 @@ const issueRoutes = require("./routes/issues.js");
 const profileRoutes = require("./routes/profileRoutes.js");
 const contributionsRoutes = require("./routes/contributions.js");
 
-// CSRF token endpoint
 app.get("/api/csrf-token", (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
@@ -93,45 +87,22 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 // === Error Handlers ===
 app.use(csrfErrorHandler);
-
 const errorHandler = require("./middlewares/errorHandler.js");
 app.use(errorHandler);
 
 // === Start Server ===
-// Vercel needs the app exported as a handler.
-// Locally: use cluster for multi-core performance.
-const isVercel = process.env.VERCEL || process.env.VERCEL_ENV;
+const cluster = require("cluster");
+const os = require("os");
+const numCPUs = os.cpus().length;
 
-if (isVercel) {
-  // Export app for Vercel to handle routing
-  module.exports = app;
+if (cluster.isPrimary) {
+  console.log(`CivicPulse Backend Started | PID: ${process.pid} | Cores: ${numCPUs}`);
+  for (let i = 0; i < numCPUs; i++) cluster.fork();
+  cluster.on("exit", (worker) => {
+    console.error(`Worker ${worker.process.pid} died. Restarting...`);
+    cluster.fork();
+  });
 } else {
-  const cluster = require("cluster");
-  const os = require("os");
-  const numCPUs = os.cpus().length;
-
-  if (cluster.isPrimary) {
-    console.log(`======================================`);
-    console.log(`CivicPulse Backend Primary Process Started`);
-    console.log(`Primary PID: ${process.pid}`);
-    console.log(`=======================================`);
-    console.log(`Forking server for ${numCPUs} CPU Cores...`);
-
-    for (let i = 0; i < numCPUs; i++) cluster.fork();
-
-    cluster.on("online", (worker) => {
-      console.log(`Worker ${worker.process.pid} is online`);
-    });
-
-    cluster.on("exit", (worker, code, signal) => {
-      console.error(`Worker ${worker.process.pid} died. Code: ${code}, Signal: ${signal}`);
-      if (worker.exitedAfterDisconnect !== true) {
-        console.log(`Restarting worker...`);
-        cluster.fork();
-      }
-    });
-  } else {
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Worker running at http://localhost:${PORT}`));
-  }
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`Worker ${process.pid} running on port ${PORT}`));
 }
