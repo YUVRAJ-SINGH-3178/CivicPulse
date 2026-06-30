@@ -1,146 +1,138 @@
-const cluster = require("cluster");
-const os = require("os");
 const process = require("process");
+require("dotenv").config();
 
-const numCPUs = os.cpus().length;
-if (cluster.isPrimary) {
-  console.log(`======================================`);
-  console.log(`CivicPulse Backend Primary Process Started`);
-  console.log(`Primary PID:${process.pid}`);
-  console.log(`=======================================`);
-  console.log(`Forking server for ${numCPUs} CPU Cores...`);
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const cookieParser = require("cookie-parser");
+const rateLimit = require("express-rate-limit");
+const path = require("path");
 
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
+// Security middlewares
+const { xssSanitizer } = require("./middlewares/xssSanitizer");
+const {
+  skipCSRFForRoutes,
+  csrfErrorHandler,
+} = require("./middlewares/csrfProtection");
+
+const app = express();
+
+// === Database Initialization ===
+require("./config/mongo.js"); // MongoDB
+
+// === Swagger Docs ===
+const { swaggerUi, specs } = require("./config/swagger.js");
+
+// === Middlewares ===
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      // Allow any localhost, any vercel.app, or your specific domains
+      if (
+        origin.startsWith("http://localhost") ||
+        origin.endsWith(".vercel.app") ||
+        origin.includes("civicpulse")
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("CORS policy violation"), false);
+    },
+    credentials: true,
+  })
+);
+app.use(helmet());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// === Security Middlewares ===
+app.use(xssSanitizer);
+
+// CSRF Protection (skip for certain routes)
+const csrfSkipRoutes = [
+  "/api/contributors",  // Public read-only API
+  "/api-docs",          // Swagger documentation
+  "/api/auth/webhook",  // Webhooks
+  "/api/issues",        // Public issue submissions (multipart — csurf can't read body before multer)
+  "/api/profile",       // Profile creation/update
+];
+app.use(skipCSRFForRoutes(csrfSkipRoutes));
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// === Rate Limiting ===
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: "Too many requests from this IP, please try again later.",
+});
+app.use(limiter);
+
+// === Routes ===
+const authRoutes = require("./routes/auth.js");
+const issueRoutes = require("./routes/issues.js");
+const profileRoutes = require("./routes/profileRoutes.js");
+const contributionsRoutes = require("./routes/contributions.js");
+
+// CSRF token endpoint
+app.get("/api/csrf-token", (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/issues", issueRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/contributors", contributionsRoutes);
+
+// === Swagger API Docs ===
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
+
+// === Error Handlers ===
+app.use(csrfErrorHandler);
+
+const errorHandler = require("./middlewares/errorHandler.js");
+app.use(errorHandler);
+
+// === Start Server ===
+// On Vercel: run as a single process.
+// Locally: use cluster for multi-core performance.
+const isVercel = process.env.VERCEL || process.env.VERCEL_ENV;
+
+if (!isVercel) {
+  const cluster = require("cluster");
+  const os = require("os");
+  const numCPUs = os.cpus().length;
+
+  if (cluster.isPrimary) {
+    console.log(`======================================`);
+    console.log(`CivicPulse Backend Primary Process Started`);
+    console.log(`Primary PID: ${process.pid}`);
+    console.log(`=======================================`);
+    console.log(`Forking server for ${numCPUs} CPU Cores...`);
+
+    for (let i = 0; i < numCPUs; i++) cluster.fork();
+
+    cluster.on("online", (worker) => {
+      console.log(`Worker ${worker.process.pid} is online`);
+    });
+
+    cluster.on("exit", (worker, code, signal) => {
+      console.error(`Worker ${worker.process.pid} died. Code: ${code}, Signal: ${signal}`);
+      if (worker.exitedAfterDisconnect !== true) {
+        console.log(`Restarting worker...`);
+        cluster.fork();
+      }
+    });
+  } else {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`Worker running at http://localhost:${PORT}`));
   }
-
-  cluster.on("online", (worker) => {
-    console.log(`Worker ${worker.process.pid} is online`);
-  });
-
-  cluster.on("exit", (worker, code, signal) => {
-    console.error(
-      `Worker ${worker.process.pid} died. Code: ${code}, Signal: ${signal}`
-    );
-    if (worker.exitedAfterDisconnect === true) {
-      console.log(
-        `Worker ${worker.process.pid} exited shutting down gracefully.`
-      );
-    } else {
-      console.log(
-        `Worker ${worker.process.pid} exited unexpectedly. Restarting...`
-      );
-      cluster.fork();
-    }
-  });
 } else {
-  const express = require("express");
-  const cors = require("cors");
-  const helmet = require("helmet");
-  const cookieParser = require("cookie-parser");
-  const rateLimit = require("express-rate-limit");
-  const path = require("path");
-  require("dotenv").config();
-
-  // Security middlewares
-  const { xssSanitizer } = require("./middlewares/xssSanitizer");
-  const {
-    skipCSRFForRoutes,
-    csrfErrorHandler,
-  } = require("./middlewares/csrfProtection");
-
-  const app = express();
-
-  // === Database Initialization ===
-
-  // Commented db.js import so that the app can run on MongoDB only to rectify the issue of multiple database connections
-
-  // require("./config/db.js");     // PostgreSQL
-  require("./config/mongo.js"); // MongoDB
-
-  // === Swagger Docs ===
-  const { swaggerUi, specs } = require("./config/swagger.js");
-
-  // === Middlewares ===
-  app.use(
-    cors({
-      origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        
-        // Allow any localhost, any vercel.app, or your specific domains
-        if (
-          origin.startsWith("http://localhost") || 
-          origin.endsWith(".vercel.app") || 
-          origin.includes("civicpulse")
-        ) {
-          return callback(null, true);
-        }
-        
-        return callback(new Error('CORS policy violation'), false);
-      },
-      credentials: true,
-    })
-  );
-  app.use(helmet());
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  app.use(cookieParser());
-
-  // === Security Middlewares ===
-  // Global XSS Sanitization
-  app.use(xssSanitizer);
-
-  // CSRF Protection (skip for certain routes)
-  const csrfSkipRoutes = [
-    "/api/contributors",  // Public read-only API
-    "/api-docs",          // Swagger documentation
-    "/api/auth/webhook",  // Webhooks
-    "/api/issues",        // Public issue submissions (multipart — csurf can't read body before multer)
-    "/api/profile",       // Profile creation/update
-  ];
-  app.use(skipCSRFForRoutes(csrfSkipRoutes));
-
-  app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-  // === Rate Limiting ===
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100,
-    message: "Too many requests from this IP, please try again later.",
-  });
-  app.use(limiter);
-
-  // === Routes ===
-  const authRoutes = require("./routes/auth.js");
-  const issueRoutes = require("./routes/issues.js");
-  const profileRoutes = require("./routes/profileRoutes.js");
-  const contributionsRoutes = require("./routes/contributions.js");
-
-  // CSRF token endpoint
-  app.get("/api/csrf-token", (req, res) => {
-    res.json({ csrfToken: req.csrfToken() });
-  });
-
-  app.use("/api/auth", authRoutes);
-  app.use("/api/issues", issueRoutes);
-  app.use("/api/profile", profileRoutes);
-  app.use("/api/contributors", contributionsRoutes);
-
-  // === Swagger API Docs ===
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
-
-  // === Error Handlers ===
-  // CSRF Error Handler (must come before global error handler)
-  app.use(csrfErrorHandler);
-
-  // Global Error Handler
-  const errorHandler = require("./middlewares/errorHandler.js");
-  app.use(errorHandler);
-
-  // === Start Server ===
+  // Vercel: single process, no clustering
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-  });
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
