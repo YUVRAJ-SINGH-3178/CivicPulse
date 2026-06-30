@@ -17,6 +17,9 @@ const {
 
 const app = express();
 
+// Trust Render/Vercel reverse proxy for accurate IP detection (rate limiting)
+app.set("trust proxy", 1);
+
 // === Database Initialization ===
 require("./config/mongo.js"); // MongoDB
 

@@ -2,6 +2,34 @@ const Issue = require('../models/issues');
 const path = require('path');
 const { analyzeIssueWithAI } = require('../utils/geminiService');
 
+const VALID_CATEGORIES = [
+  'Road & Infrastructure',
+  'Water & Sanitation',
+  'Electricity',
+  'Public Safety',
+  'Waste Management',
+  'Parks & Recreation',
+  'Noise Pollution',
+  'Other'
+];
+
+// Maps loose AI-returned strings to valid schema enum values
+const sanitizeCategory = (raw) => {
+  if (!raw) return 'Other';
+  const lower = raw.toLowerCase();
+  if (lower.includes('road') || lower.includes('infrastructure') || lower.includes('pothole') || lower.includes('pavement')) return 'Road & Infrastructure';
+  if (lower.includes('water') || lower.includes('sanit') || lower.includes('sewage') || lower.includes('drain')) return 'Water & Sanitation';
+  if (lower.includes('electric') || lower.includes('light') || lower.includes('power')) return 'Electricity';
+  if (lower.includes('safety') || lower.includes('crime') || lower.includes('hazard')) return 'Public Safety';
+  if (lower.includes('waste') || lower.includes('garbage') || lower.includes('trash') || lower.includes('litter')) return 'Waste Management';
+  if (lower.includes('park') || lower.includes('recreation') || lower.includes('garden')) return 'Parks & Recreation';
+  if (lower.includes('noise') || lower.includes('sound') || lower.includes('pollution')) return 'Noise Pollution';
+  // Exact match check as last resort
+  const exact = VALID_CATEGORIES.find(c => c.toLowerCase() === lower);
+  return exact || 'Other';
+};
+
+
 // Create a new issue
 exports.createIssue = async (req, res) => {
   try {
@@ -41,7 +69,7 @@ exports.createIssue = async (req, res) => {
     const issue = new Issue({
       title,
       description,
-      category: aiData?.category || category || 'Other',
+      category: sanitizeCategory(aiData?.category || category),
       severity: aiData?.severity || severity || 'Medium',
       location: location || '',
       latitude: latitude ? parseFloat(latitude) : undefined,
