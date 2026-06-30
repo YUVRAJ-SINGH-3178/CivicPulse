@@ -298,6 +298,13 @@ Respond ONLY with a valid JSON object. No markdown. No explanation. No backticks
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setSubmitError(null);
+
+    if (!userId) {
+      setSubmitError("You must be signed in to submit a report. Please sign in and try again.");
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const submitData = new FormData();
       submitData.append("title", formData.title);
