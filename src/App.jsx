@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { SignIn, SignUp, useAuth } from '@clerk/clerk-react';
@@ -25,7 +25,7 @@ import IssueDetail from './Pages/IssueDetail';
 import UserDashboard from './Pages/UserDashboard';
 
 import Profile from './Pages/Profile';
-import ProfileSetup from './Pages/ProfileSetup';
+
 import Resources from './Pages/Resources';
 import MyComplaints from './Pages/MyComplaints';
 
@@ -43,26 +43,12 @@ import CommunityFeed from './Pages/CommunityFeed';
 import PredictiveInsights from './Pages/PredictiveInsights';
 
 
-import useProfileStatus from './hooks/useProfileStatus';
+
 
 const App = () => {
   const { isSignedIn } = useAuth();
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
-  const { isProfileComplete, isLoading: profileLoading, refetch: refetchProfileStatus } = useProfileStatus();
-
-  const renderDashboard = () => {
-    if (profileLoading) {
-      return (
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="text-green-600 font-medium animate-pulse">Loading dashboard...</div>
-        </div>
-      );
-    }
-    if (!isProfileComplete) return <Navigate to="/profile-setup" replace />;
-
-    return <UserDashboard />;
-  };
 
   return (
     <>
@@ -120,14 +106,7 @@ const App = () => {
             <Route path='/community-feed' element={<CommunityFeed/>}/>
             <Route path='/insights' element={<PredictiveInsights/>}/>
 
-            <Route
-              path="/profile-setup"
-              element={
-                <PrivateRoute allowedRoles={['user', 'admin']}>
-                  <ProfileSetup onComplete={() => refetchProfileStatus()}/>
-                </PrivateRoute>
-              }
-            />
+            <Route path="/profile-setup" element={<Navigate to="/" replace />} />
             
             <Route path="/resources" element={<Resources />} />
             <Route path="/complaints" element={<MyComplaints />} />
@@ -159,7 +138,7 @@ const App = () => {
               path="/user/dashboard"
               element={
                 <PrivateRoute allowedRoles={['user', 'admin']}>
-                  {renderDashboard()}
+                  <UserDashboard />
                 </PrivateRoute>
               }
             />
