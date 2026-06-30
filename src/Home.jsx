@@ -5,15 +5,14 @@ import "./Home.css";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { toast, ToastContainer } from "react-toastify";
-import ProfileCompletionBanner from "./components/ProfileCompletionBanner";
-import useProfileStatus from "./hooks/useProfileStatus";
+
 import TestimonialCarousel from "./components/TestimonialCarousel";
 import { API_BASE_URL } from "./utils/apiConfig";
 
 function Home() {
   const navigate = useNavigate();
   const { isSignedIn } = useAuth();
-  const { isProfileComplete, isLoading: profileLoading } = useProfileStatus();
+
   
   // States for Live Reports Widget
   const [issues, setIssues] = useState([]);
@@ -184,7 +183,7 @@ function Home() {
       </Helmet>
 
       <main className="flex-1 pb-16">
-        <ProfileCompletionBanner />
+
 
         {/* HERO SECTION */}
         <section className="relative overflow-hidden pt-32 pb-20 px-6">

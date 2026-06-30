@@ -312,7 +312,7 @@ Respond ONLY with a valid JSON object. No markdown. No explanation. No backticks
       submitData.append("confidence", aiResult.confidence.toString());
       submitData.append("summary", aiResult.summary);
       submitData.append("notifyByEmail", notifyByEmail.toString());
-      submitData.append("file", file);
+      if (file) submitData.append("file", file);
       if (coordinates.latitude) submitData.append("latitude", coordinates.latitude);
       if (coordinates.longitude) submitData.append("longitude", coordinates.longitude);
       if (userId) submitData.append("clerkUserId", userId);
@@ -323,7 +323,7 @@ Respond ONLY with a valid JSON object. No markdown. No explanation. No backticks
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to submit report to database");
+      if (!res.ok) throw new Error(data.error || data.details || data.message || "Failed to submit report to database");
 
       setSubmittedIssue(data.issue || data);
       setStep("success");
