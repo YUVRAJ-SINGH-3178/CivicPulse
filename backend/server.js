@@ -64,11 +64,21 @@ if (cluster.isPrimary) {
   // === Middlewares ===
   app.use(
     cors({
-      origin: [
-        "http://localhost:3000",
-        "https://civicpulse-phi.vercel.app",
-        "https://CivicPulse-phi.vercel.app",
-      ],
+      origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // Allow any localhost, any vercel.app, or your specific domains
+        if (
+          origin.startsWith("http://localhost") || 
+          origin.endsWith(".vercel.app") || 
+          origin.includes("civicpulse")
+        ) {
+          return callback(null, true);
+        }
+        
+        return callback(new Error('CORS policy violation'), false);
+      },
       credentials: true,
     })
   );
